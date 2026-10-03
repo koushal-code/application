@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Tasks — Pallavi Boutiques</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8F5F0; --surface: #FFFFFF; --surface-alt: #FAF8F4;
+      --gold: #B8964E; --gold-light: #D4AF61;
+      --text: #1A1A1A; --text-muted: #7A756C; --border: #E4DDD3;
+      --red: #B83232; --green: #1E7A45; --yellow: #B07A00; --blue: #1A5E8A;
+      --radius: 14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body { font-family: 'Jost', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; -webkit-font-smoothing: antialiased; }
+    svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .header { background: #0A0A0C; color: white; padding: 26px 20px 22px; text-align: center; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid rgba(184,150,78,.3); }
+    .header h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--gold-light); letter-spacing: 4px; }
+    .header .sub { font-size: .85rem; color: rgba(255,255,255,.5); margin-top: 6px; }
+    .mode-pill { display: inline-block; margin-top: 8px; font-size: .7rem; padding: 3px 12px; border-radius: 20px; letter-spacing: .4px; font-weight: 600; }
+    .mode-cloud  { background: rgba(30,122,69,.25); color: #7effc0; border: 1px solid rgba(30,122,69,.4); }
+    .mode-wifi   { background: rgba(176,122,0,.25); color: #ffd97a; border: 1px solid rgba(176,122,0,.4); }
+    .mode-local  { background: rgba(184,50,50,.25); color: #ffaaaa; border: 1px solid rgba(184,50,50,.4); }
+
+    .summary { display: flex; gap: 12px; padding: 18px 16px; overflow-x: auto; }
+    .s-card { flex: 1; min-width: 90px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+    .s-card .num { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 700; line-height: 1; }
+    .s-card .lbl { font-size: .68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; font-weight: 600; margin-top: 4px; }
+
+    .sec-title { padding: 24px 16px 12px; font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .sec-title svg { width: 20px; height: 20px; color: var(--gold); }
+
+    .task-list { display: flex; flex-direction: column; gap: 12px; padding: 0 14px; }
+    .task-card { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+    .task-card.overdue     { border-left-color: var(--red); }
+    .task-card.pending     { border-left-color: var(--yellow); }
+    .task-card.in-progress { border-left-color: var(--blue); }
+    .task-card.completed   { border-left-color: var(--green); opacity: .85; }
+
+    .task-top  { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .task-id   { font-size: .72rem; font-weight: 600; color: var(--text-muted); letter-spacing: .5px; margin-bottom: 2px; }
+    .task-name { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 700; }
+    .task-type { color: var(--gold); font-weight: 600; font-size: .9rem; margin-top: 2px; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+    .b-pend  { background: rgba(176,122,0,.1); color: var(--yellow); }
+    .b-prog  { background: rgba(26,94,138,.1);  color: var(--blue); }
+    .b-done  { background: rgba(30,122,69,.1);  color: var(--green); }
+    .b-over  { background: rgba(184,50,50,.1);  color: var(--red); }
+
+    .task-detail-text { font-size: .88rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5; }
+    .task-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--surface-alt); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+    .meta-lbl { font-size: .68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
+    .meta-val { font-weight: 600; font-size: .9rem; margin-top: 3px; }
+
+    .task-controls { border-top: 1px solid var(--border); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .task-controls select,
+    .task-controls textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-size: .92rem; background: var(--surface-alt); color: var(--text); }
+    .task-controls select:focus, .task-controls textarea:focus { outline: none; border-color: var(--gold); }
+    .task-controls textarea { resize: none; }
+    .btn-update { background: #0A0A0C; color: white; border: none; padding: 14px; border-radius: 10px; font-family: 'Jost', sans-serif; font-weight: 600; font-size: .95rem; cursor: pointer; transition: opacity .2s; width: 100%; }
+    .btn-update:hover { opacity: .85; }
+    .btn-update:disabled { opacity: .5; cursor: not-allowed; }
+
+    .note-display { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }
+
+    .empty { text-align: center; color: var(--text-muted); padding: 40px 20px; }
+
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0A0A0C; color: white; padding: 14px 26px; border-radius: 30px; font-size: .9rem; font-weight: 600; opacity: 0; transition: all .3s; box-shadow: 0 10px 30px rgba(0,0,0,.25); pointer-events: none; z-index: 100; border-left: 4px solid var(--gold); }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    .offline-banner { background: rgba(184,50,50,.1); border-bottom: 1px solid rgba(184,50,50,.2); color: var(--red); text-align: center; padding: 10px 16px; font-size: .85rem; font-weight: 500; }
+    .offline-banner.green { background: rgba(30,122,69,.08); border-color: rgba(30,122,69,.2); color: var(--green); }
+
+    @media (max-width: 480px) {
+      .task-meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Pallavi Boutiques</h1>
+  <div class="sub" id="worker-info">Loading tasks...</div>
+  <div class="mode-pill" id="mode-pill" style="display:none"></div>
+</div>
+<div id="conn-banner" style="display:none"></div>
+
+<div class="summary" id="summary"></div>
+
+<div class="sec-title">
+  <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  Assigned Tasks
+</div>
+<div class="task-list" id="active-tasks"></div>
+
+<div class="sec-title" style="margin-top:16px">
+  <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+  Completed
+</div>
+<div class="task-list" id="completed-tasks"></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js" onerror="window.PB_CONFIG={}"></script>
+<script>
+/* ═══════════════════════════════════════════════════
+   Worker Portal — Pallavi Boutiques
+   Supports Firebase (cloud) / Node server (WiFi) / localStorage (offline)
+   ═══════════════════════════════════════════════════ */
+var CFG     = (typeof window.PB_CONFIG !== 'undefined') ? window.PB_CONFIG : {};
+var FB_URL  = CFG.firebaseDbUrl || (CFG.firebaseConfig && CFG.firebaseConfig.databaseURL) || '';
+var API     = window.location.origin;
+var IS_STATIC = window.location.protocol === 'file:' || window.location.hostname.includes('github.io');
+
+var params   = new URLSearchParams(window.location.search);
+var wid      = params.get('id');
+var workerData = null;
+var allTasks   = [];
+
+if (!wid) {
+  document.body.innerHTML = '<div style="text-align:center;padding:80px 24px"><h2 style="font-family:\'Cormorant Garamond\',serif;font-size:1.8rem">Invalid Link</h2><p style="color:#7A756C;margin-top:12px">No worker ID in URL. Please scan a valid QR code.</p></div>';
+}
+
+/* ── Toast ── */
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+
+/* ── Formatting ── */
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function daysUntil(ds) {
+  if (!ds) return 999;
+  var a = new Date(); a.setHours(0,0,0,0);
+  var b = new Date(ds); b.setHours(0,0,0,0);
+  return Math.ceil((b - a) / 86400000);
+}
+function makeBadge(status, deadline) {
+  var d  = daysUntil(deadline);
+  var ov = deadline && d < 0 && status !== 'Completed' && status !== 'Delivered';
+  if (ov) return '<span class="badge b-over">Overdue</span>';
+  if (status === 'Completed' || status === 'Delivered')  return '<span class="badge b-done">' + status + '</span>';
+  if (status === 'In Progress' || status === 'Ready for Trial' || status === 'Alterations') return '<span class="badge b-prog">' + status + '</span>';
+  return '<span class="badge b-pend">' + status + '</span>';
+}
+function cardClass(status, deadline) {
+  var d  = daysUntil(deadline);
+  if (deadline && d < 0 && status !== 'Completed' && status !== 'Delivered') return 'overdue';
+  if (status === 'Completed' || status === 'Delivered') return 'completed';
+  if (status === 'In Progress' || status === 'Ready for Trial' || status === 'Alterations') return 'in-progress';
+  return 'pending';
+}
+
+/* ── Firebase REST ── */
+function useFirebase() { return !!(FB_URL && FB_URL.includes('firebaseio.com')); }
+
+async function fbFetch(path, method, data) {
+  var url  = FB_URL.replace(/\/$/, '') + '/pb' + path + '.json';
+  var opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
+  if (data !== undefined) opts.body = JSON.stringify(data);
+  var r = await fetch(url, opts);
+  if (!r.ok) throw new Error('Firebase ' + r.status);
+  return await r.json();
+}
+
+/* ── localStorage fallback ── */
+function lsGet() {
+  try { return JSON.parse(localStorage.getItem('pb_data') || '{"workers":[],"orders":[]}'); }
+  catch { return { workers: [], orders: [] }; }
+}
+function lsSave(d) { localStorage.setItem('pb_data', JSON.stringify(d)); }
+
+/* ── Load tasks from the correct source ── */
+var dataMode = 'offline';
+
+async function loadTasks() {
+  if (!wid) return;
+
+  /* 1. Firebase */
+  if (useFirebase()) {
+    try {
+      var wSnap = await fbFetch('/workers/' + wid, 'GET');
+      var oSnap = await fbFetch('/orders', 'GET');
+      var allOrders = oSnap ? Object.values(oSnap) : [];
+      workerData = wSnap;
+      allTasks   = allOrders.filter(function(o) { return o.workerId === wid; });
+      dataMode   = 'firebase';
+      setModePill('🌐 Cloud Sync', 'cloud');
+      render();
+      return;
+    } catch(e) {
+      console.warn('Firebase failed, trying server:', e.message);
+    }
+  }
+
+  /* 2. Node server (same WiFi) */
+  if (!IS_STATIC) {
+    try {
+      var res  = await fetch(API + '/api/staff-tasks/' + wid, { signal: AbortSignal.timeout(4000) });
+      if (res.ok) {
+        var data = await res.json();
+        workerData = data.worker;
+        allTasks   = data.tasks || [];
+        dataMode   = 'server';
+        setModePill('🏠 Local Network', 'wifi');
+        render();
+        return;
+      }
+    } catch(e) {
+      console.warn('Server not reachable:', e.message);
+    }
+  }
+
+  /* 3. localStorage */
+  var d = lsGet();
+  workerData = d.workers ? d.workers.find(function(w) { return w.id === wid; }) : null;
+  allTasks   = d.orders ? d.orders.filter(function(o) { return o.workerId === wid; }) : [];
+  dataMode   = 'offline';
+  setModePill('💾 Offline — data not synced', 'local');
+
+  if (!workerData) {
+    document.getElementById('worker-info').textContent = 'Worker not found';
+    document.getElementById('active-tasks').innerHTML = '<div class="empty"><p style="color:var(--red)">Could not load tasks. Check your connection or scan the QR again.</p></div>';
+    return;
+  }
+  render();
+}
+
+function setModePill(label, type) {
+  var el = document.getElementById('mode-pill');
+  el.textContent = label;
+  el.className = 'mode-pill mode-' + type;
+  el.style.display = 'inline-block';
+}
+
+function render() {
+  if (!workerData) { document.getElementById('worker-info').textContent = 'Worker not found'; return; }
+  document.getElementById('worker-info').textContent = workerData.name + ' · ' + (workerData.specialty || 'General');
+
+  var active    = allTasks.filter(function(t) { return t.status !== 'Completed' && t.status !== 'Delivered'; });
+  var completed = allTasks.filter(function(t) { return t.status === 'Completed' || t.status === 'Delivered'; });
+  var overdue   = active.filter(function(t) { return t.deadline && daysUntil(t.deadline) < 0; });
+
+  document.getElementById('summary').innerHTML =
+    '<div class="s-card"><div class="num" style="color:var(--yellow)">' + active.length + '</div><div class="lbl">Active</div></div>' +
+    '<div class="s-card"><div class="num" style="color:var(--red)">' + overdue.length + '</div><div class="lbl">Overdue</div></div>' +
+    '<div class="s-card"><div class="num" style="color:var(--green)">' + completed.length + '</div><div class="lbl">Done</div></div>';
+
+  active.sort(function(a,b) { return new Date(a.deadline) - new Date(b.deadline); });
+
+  document.getElementById('active-tasks').innerHTML = active.length
+    ? active.map(function(t) { return buildCard(t, true); }).join('')
+    : '<div class="empty"><p>All tasks completed! Great work 🎉</p></div>';
+
+  document.getElementById('completed-tasks').innerHTML = completed.length
+    ? completed.map(function(t) { return buildCard(t, false); }).join('')
+    : '<div class="empty"><p>No completed tasks yet</p></div>';
+}
+
+function buildCard(t, showControls) {
+  var d    = daysUntil(t.deadline);
+  var dStr = fmtDate(t.deadline);
+  if (t.status !== 'Completed' && t.status !== 'Delivered') {
+    if (d < 0)      dStr += ' <span style="color:var(--red);font-weight:700">(' + Math.abs(d) + 'd overdue)</span>';
+    else if (d === 0) dStr += ' <span style="color:var(--red);font-weight:700">(Due Today!)</span>';
+    else if (d <= 3)  dStr += ' <span style="color:var(--yellow)">(' + d + 'd left)</span>';
+    else              dStr += ' (' + d + 'd left)';
+  }
+
+  var html = '<div class="task-card ' + cardClass(t.status, t.deadline) + '">';
+  html += '<div class="task-top">';
+  html += '<div><div class="task-id">ORDER #' + t.id + '</div>';
+  html += '<div class="task-name">' + (t.customerName || '—') + '</div>';
+  html += '<div class="task-type">' + (t.clothType || '—') + '</div></div>';
+  html += makeBadge(t.status, t.deadline) + '</div>';
+  if (t.clothDetails) html += '<div class="task-detail-text">' + t.clothDetails + '</div>';
+  html += '<div class="task-meta">';
+  html += '<div><div class="meta-lbl">Deadline</div><div class="meta-val">' + dStr + '</div></div>';
+  html += '<div><div class="meta-lbl">Total</div><div class="meta-val">₹' + Number(t.total || 0).toLocaleString('en-IN') + '</div></div>';
+  html += '</div>';
+
+  if (showControls) {
+    var opts = ['Pending', 'In Progress', 'Ready for Trial', 'Alterations', 'Completed'];
+    html += '<div class="task-controls">';
+    html += '<select id="sel-' + t.id + '">';
+    opts.forEach(function(s) { html += '<option value="' + s + '"' + (t.status === s ? ' selected' : '') + '>' + s + '</option>'; });
+    html += '</select>';
+    html += '<textarea id="note-' + t.id + '" placeholder="Add a note (optional)..." rows="2">' + (t.workerNote || '') + '</textarea>';
+    html += '<button class="btn-update" id="upd-' + t.id + '" onclick="updateTask(\'' + t.id + '\')">Update Status</button>';
+    html += '</div>';
+  } else if (t.workerNote) {
+    html += '<div class="note-display"><div class="meta-lbl">Your Note</div><div style="font-size:.9rem;margin-top:4px">' + t.workerNote + '</div></div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+/* ── Update task ── */
+async function updateTask(orderId) {
+  var sel  = document.getElementById('sel-' + orderId);
+  var note = document.getElementById('note-' + orderId);
+  var btn  = document.getElementById('upd-' + orderId);
+  var status = sel  ? sel.value        : 'Completed';
+  var noteVal = note ? note.value.trim() : '';
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Updating...'; }
+
+  /* 1. Try Firebase */
+  if (useFirebase()) {
+    try {
+      var existing = await fbFetch('/orders/' + orderId, 'GET');
+      var updated  = Object.assign({}, existing, {
+        status: status,
+        workerNote: noteVal,
+        updatedAt: new Date().toISOString()
+      });
+      await fbFetch('/orders/' + orderId, 'PUT', updated);
+      showToast('Order #' + orderId + ' → ' + status);
+      await loadTasks();
+      return;
+    } catch(e) { console.warn('Firebase update failed:', e.message); }
+  }
+
+  /* 2. Try Node server */
+  if (!IS_STATIC) {
+    try {
+      var res = await fetch(API + '/api/staff-complete/' + orderId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: status, workerNote: noteVal }),
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        showToast('Order #' + orderId + ' → ' + status);
+        await loadTasks();
+        return;
+      }
+    } catch(e) { console.warn('Server update failed:', e.message); }
+  }
+
+  /* 3. localStorage */
+  var d   = lsGet();
+  var idx = d.orders ? d.orders.findIndex(function(o) { return o.id === orderId; }) : -1;
+  if (idx >= 0) {
+    d.orders[idx].status    = status;
+    d.orders[idx].workerNote = noteVal;
+    d.orders[idx].updatedAt  = new Date().toISOString();
+    lsSave(d);
+    showToast('Saved locally — sync when back online');
+    await loadTasks();
+  } else {
+    showToast('Could not update — order not found');
+    if (btn) { btn.disabled = false; btn.textContent = 'Update Status'; }
+  }
+}
+
+/* Start */
+if (wid) {
+  loadTasks();
+  setInterval(loadTasks, 20000);
+}
+</script>
+</body>
+</html>
