@@ -18,6 +18,6 @@ window.PB_CONFIG = {
     measurementId: "G-E2W6EK63WW"
   },
 
-  // Public URL for QR codes — leave "" to auto-detect
-  publicBaseUrl: ""
+  // Public URL for QR codes
+  publicBaseUrl: "https://koushal-code.github.io/application"
 };
